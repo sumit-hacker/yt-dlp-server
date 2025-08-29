@@ -3,10 +3,25 @@ import yt_dlp
 
 app = Flask(__name__)
 
-@app.route("/extract", methods=["POST"])
+@app.route("/", methods=["GET"])
+def home():
+    return {
+        "message": "yt-dlp server running",
+        "usage": {
+            "POST": "/extract  with JSON { 'url': '<video_url>' }",
+            "GET": "/extract?url=<video_url>"
+        }
+    }
+
+@app.route("/extract", methods=["GET", "POST"])
 def extract():
-    data = request.get_json()
-    url = data.get("url")
+    # Handle POST (JSON body)
+    if request.method == "POST":
+        data = request.get_json(silent=True) or {}
+        url = data.get("url")
+    else:
+        # Handle GET (?url=...)
+        url = request.args.get("url")
 
     if not url:
         return jsonify({"error": "No URL provided"}), 400
